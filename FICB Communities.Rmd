@@ -56,8 +56,6 @@ dk_or_ca_map <- function() {
 
 # Notes
 
-Not all the FICB communities show up in Census data. 
-
 # Population Size
 
 ## Histogram
@@ -75,7 +73,7 @@ ggplot(pop_size, aes(estimate)) +
 
 ## Map
 
-```{r}
+```{r fig.height=10}
 dk_or_ca_map() +
      geom_point(data = pop_size, aes(longitude, latitude,
                                      size = estimate),
@@ -127,10 +125,10 @@ dk_or_ca_map() +
                                         color = core),
                 size = 5,
                 alpha = 0.7) +
-     scale_color_manual(values = c(tfff.light.green,
-                                   tfff.dark.green)) +
+     scale_color_manual(values = rev(c(tfff.light.green,
+                                   tfff.dark.green))) +
      labs(color = "") +
-     theme(legend.position = "top")
+     theme(legend.position = "right")
 
 
 
