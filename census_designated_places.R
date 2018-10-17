@@ -1,3 +1,5 @@
+# Was just trying to figure out why not all places are showing up
+
 library(tigris)
 library(tidyverse)
 library(sf)

@@ -70,9 +70,9 @@ communities <- read_excel("data/data.xlsx",
      rename(name = community) %>% 
      mutate(name = str_replace(name, "Mt.", "Mount")) %>% 
      mutate(full_address = str_glue("{name} {state}"))
-     # left_join(geocodes, by = "full_address") 
-     # select(c(name.x, state.x, full_address, geoid, longitude, latitude)) %>% 
-     # set_names(c("name", "state", "full_address", "geoid", "lon", "lat"))
+# left_join(geocodes, by = "full_address") 
+# select(c(name.x, state.x, full_address, geoid, longitude, latitude)) %>% 
+# set_names(c("name", "state", "full_address", "geoid", "lon", "lat"))
 
 
 write_csv(communities, "temp/communities.csv",
@@ -83,9 +83,9 @@ write_csv(communities, "temp/communities.csv",
 # Communities not in ACS --------------------------------------------------
 
 communities_not_in_acs <- get_acs(geography = "place", 
-                         variables = c(medincome = "B19013_001"), 
-                         state = c("OR", "CA"),
-                         cache = T) %>% 
+                                  variables = c(medincome = "B19013_001"), 
+                                  state = c("OR", "CA"),
+                                  cache = T) %>% 
      clean_names() %>% 
      mutate(state = case_when(
           str_detect(name, "California") ~ "CA",
@@ -129,6 +129,7 @@ incorporation_status <- read_excel("data/data.xlsx",
      )) %>% 
      mutate(incorporation_status_dichotomous = fct_inorder(incorporation_status_dichotomous))
 
+skim(incorporation_status$incorporation_status_dichotomous)
 
 incorporation_status_cats <- incorporation_status %>% 
      group_by(incorporation_status_dichotomous) %>% 
@@ -152,6 +153,8 @@ pop_size <- get_acs(geography = "place",
      inner_join(communities, by = "full_address") %>% 
      mutate(moe_pct = moe/estimate) 
 
+skim(pop_size$estimate)
+
 pop_size_cats <- pop_size %>% 
      mutate(pop_cat = case_when(
           estimate > 20000 ~ "20,000+",
@@ -172,8 +175,22 @@ pop_size_cats <- pop_size %>%
                                                  "5,000-10,000",
                                                  "10,000-20,000",
                                                  "20,000+"))) %>% 
-     mutate(pop_cat = fct_rev(pop_cat)) %>% 
+     # mutate(pop_cat = fct_rev(pop_cat)) %>%
      mutate(pct = prop.table(n))
+
+get_acs(geography = "place", 
+        variables = c(medincome = "B01003_001"), 
+        state = "OR",
+        cache = T) %>% 
+     arrange(-estimate) %>% 
+     slice(1:5)
+
+get_acs(geography = "place", 
+        variables = c(medincome = "B01003_001"), 
+        state = "OR",
+        cache = T) %>% 
+     arrange(estimate) %>% 
+     slice(1:5)
 
 # Median income -----------------------------------------------------------
 
@@ -196,19 +213,21 @@ median_income <- get_acs(geography = "place",
           TRUE ~ "Oregon"
      )) 
 
+skim(median_income$estimate)
+
 median_income_comparisons <- get_acs(geography = "state", 
-                            variables = c(medincome = "B19013_001"), 
-                            state = c("OR"),
-                            cache = T) %>% 
+                                     variables = c(medincome = "B19013_001"), 
+                                     state = c("OR"),
+                                     cache = T) %>% 
      clean_names() %>% 
      rename("state.x" = "name") %>% 
      mutate(state.x = str_glue("{state.x} Median Income")) %>% 
      select(c("state.x", "estimate")) %>% 
-     add_row(state.x = "United Way Survival Budget", 
-               estimate = 62484) %>% 
+     # add_row(state.x = "United Way Survival Budget", 
+     #           estimate = 62484) %>% 
      add_row(state.x = "Federal Poverty Line",
              estimate = 28290)
-     
+
 
 median_income_cats <- median_income %>%
      mutate(median_income_cat = case_when(
@@ -230,15 +249,47 @@ median_income_cats <- median_income %>%
                                                                      "<$20,000"))) %>%
      mutate(pct = prop.table(n))
 
+get_acs(geography = "place", 
+        variables = c(medincome = "B19013_001"), 
+        state = "OR",
+        cache = T) %>% 
+     arrange(-estimate) %>% 
+     slice(1:5)
+
+get_acs(geography = "place", 
+        variables = c(medincome = "B19013_001"), 
+        state = "OR",
+        cache = T) %>% 
+     arrange(estimate) %>% 
+     slice(1:5)
 
 # Median home value -------------------------------------------------------
 
 
 median_home_value <- get_acs(geography = "place", 
-                      variables = c(medincome = "B25077_001"), 
-                      state = c("OR", "CA"),
-                      cache = T) %>% 
+                             variables = c(medincome = "B25077_001"), 
+                             state = c("OR", "CA"),
+                             cache = T) %>% 
      clean_names() %>% 
+     mutate(state = case_when(
+          str_detect(name, "California") ~ "CA",
+          TRUE ~ "OR"
+     )) %>% 
+     clean_community_name() %>% 
+     mutate(full_address = str_glue("{name} {state}")) %>% 
+     # Need to fix because only getting 52 communities so some matching is off
+     inner_join(communities, by = "full_address") %>% 
+     mutate(moe_pct = moe/estimate) 
+
+
+median_home_value_oregon <- get_acs(geography = "state", 
+                                    variables = c(medincome = "B25077_001"), 
+                                    state = c("OR"),
+                                    cache = T) %>% 
+     clean_names() %>% 
+     pull(estimate)
+
+%>% 
      mutate(state = case_when(
           str_detect(name, "California") ~ "CA",
           TRUE ~ "OR"
@@ -278,7 +329,7 @@ median_home_value_cats <- median_home_value %>%
 #               destfile = "data/far.xlsx")
 
 far_zips <- read_excel("data/far.xlsx",
-                  sheet = "FAR ZIP Code Data") %>% 
+                       sheet = "FAR ZIP Code Data") %>% 
      clean_names() %>% 
      filter(state %in% c("CA", "OR")) %>% 
      select(name, state, zip, far1:far4) %>% 
@@ -319,15 +370,28 @@ far <- communities_zips %>%
      # arrange(full_address, n) %>% 
      slice(1) %>% 
      mutate(far_level = na_if(far_level, "0")) %>% 
-     mutate(far_level_categ = as.character(far_level))
-     
+     mutate(far_level_categ = as.character(far_level)) %>% 
+     mutate(far_level_categ = as.integer(far_level_categ))
+
+
+
+far_categ <- far %>% 
+     group_by(far_level_categ) %>% 
+     count() %>% 
+     ungroup() %>% 
+     mutate(far_level_categ = replace_na(far_level_categ, "0")) %>% 
+     mutate(far_level_categ = as.numeric(far_level_categ)) %>% 
+     rename("n" = "nn")
+
+
+str(far_categ$far_level_categ)
 
 # Percent of Native Am only --------------------------
 
 native_americans <- get_acs(geography = "place", 
-                             variables = c(medincome = "B02001_004"), 
-                             state = c("OR", "CA"),
-                             cache = T) %>% 
+                            variables = c(medincome = "B02001_004"), 
+                            state = c("OR", "CA"),
+                            cache = T) %>% 
      clean_names() %>% 
      mutate(state = case_when(
           str_detect(name, "California") ~ "CA",
@@ -348,9 +412,9 @@ native_americans <- get_acs(geography = "place",
 # Percent of Latinx ------------------------------------------------------
 
 latinx <- get_acs(geography = "place", 
-                            variables = c(medincome = "B01001I_001"), 
-                            state = c("OR", "CA"),
-                            cache = T) %>% 
+                  variables = c(medincome = "B01001I_001"), 
+                  state = c("OR", "CA"),
+                  cache = T) %>% 
      clean_names() %>% 
      mutate(state = case_when(
           str_detect(name, "California") ~ "CA",

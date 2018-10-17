@@ -4,7 +4,7 @@ library(readxl)
 library(scales)
 library(formattable)
 
-source("get_data_v2.R")
+source("get_data.R")
 
 
 

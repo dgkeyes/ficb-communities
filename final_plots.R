@@ -54,94 +54,55 @@ dk_or_ca_map <- function() {
 
 
 
-# Core county -------------------------------------------------------------
-
-
-plot_core_county <- ggplot(core_county_cats, aes(x = "", y = n, fill = core)) +
-     geom_bar(stat = "identity") +
-     coord_polar("y") +
-     geom_text(aes(label = str_glue("{core}\n{n}")), position = position_stack(vjust = 0.5),
-               color = "white") +
-     theme_void() +
-     theme(legend.position = "none",
-           plot.title = element_text(hjust = 0.5,
-                                     face = "bold"),
-           plot.margin=unit(c(.5, .5, .5, .5),"cm"),
-           plot.caption = element_text(color = "#505050"),
-           strip.text = element_text(face = "bold")) +
-     scale_fill_manual(values = c(tfff.light.green,
-                                  tfff.dark.green)) +
-     labs(title = "Core County")
-
-
-# Incorporation status -------------------------------------------------------------
-
-# The labels are reverse below and I'm not quite sure why
-
-plot_incorporation_status <- ggplot(incorporation_status_cats, aes(x = "", 
-                                                                   y = n, 
-                                                                   fill = incorporation_status_dichotomous)) +
-     geom_bar(width = 1, stat = "identity") +
-     coord_polar("y") +
-     geom_text(aes(label = str_glue("{incorporation_status_dichotomous}\n{n}")), 
-               position = position_stack(vjust = 0.5),
-               color = "white") +
-     theme_void() +
-     theme(legend.position = "none",
-           plot.title = element_text(hjust = 0.5,
-                                     face = "bold"),
-           plot.margin=unit(c(.5, .5, .5, .5),"cm"),
-           plot.caption = element_text(color = "#505050"),
-           strip.text = element_text(face = "bold")) +
-     scale_fill_manual(values = rev(c(tfff.light.green,
-                                      tfff.dark.green))) +
-     labs(title = "Incorporated")
-
 
 
 # Pop size ----------------------------------------------------------------
 
-
-plot_pop_size <- ggplot(pop_size_cats, aes(1, pct,
-                                           fill = pop_cat)) +
+ggplot(pop_size_cats, aes(1, pct,
+                          fill = pop_cat)) +
      geom_col(color = "white") +
-     geom_text(aes(label = str_glue("{pop_cat} ({percent(pct, 0)})")),
-               position = position_stack(vjust = .5),
-               color = "white") +
      theme_void() +
+     coord_flip() +
      theme(legend.position = "none",
            plot.title = element_text(hjust = 0.5,
-                                     face = "bold")) +
-     scale_fill_manual(values = c(tfff.dark.green, tfff.light.green,
-                                  tfff.dark.green, tfff.light.green,
-                                  tfff.dark.green, tfff.light.green,
-                                  tfff.dark.green)) +
-     labs(title = "Population")
+                                     face = "bold")) 
 
+ggplot(pop_size_cats, aes(pop_cat, n,
+                          alpha = n)) +
+     geom_col(fill = tfff.blue) +
+     geom_text(aes(label = n),
+               hjust = -1,
+               color = tfff.blue,
+               alpha = 1) +
+     coord_flip() +
+     scale_y_continuous(limits = c(0, 15)) +
+     theme(axis.title = element_blank(),
+           legend.position = "none",
+           axis.text.x = element_blank(),
+           panel.grid = element_blank())
 
+ggsave("plots/pop-size.pdf",
+       height = 3,
+       width = 4)
+
+mean(pop_size$estimate)
 
 # Median income -----------------------------------------------------------
 
 
-plot_median_income <- ggplot(median_income, aes(1, estimate)) +
-     geom_jitter(alpha = 0.5,
+ggplot(median_income, aes(1, estimate)) +
+     geom_hline(yintercept = median_income_comparisons$estimate,
+                alpha = 1,
+                size = 1,
+                color = tfff.yellow,
+                linetype = "dashed") +
+     geom_jitter(alpha = 0.85,
                  color = tfff.dark.green,
                  size = 3) +
      scale_y_continuous(labels = dollar_format(),
                         limits = c(0, 75000),
                         breaks = seq(0, 75000, 25000)) +
-     scale_x_continuous(limits = c(1, 1.65)) +
      coord_cartesian(clip = "off") +
-     geom_text(data = median_income_comparisons,
-               aes(1.5,
-                   median_income_comparisons$estimate + 1700,
-                   label = median_income_comparisons$state.x,
-                   hjust = 0),
-               color = c(tfff.orange, tfff.blue, tfff.red)) +
-     geom_hline(yintercept = median_income_comparisons$estimate,
-                alpha = 0.5,
-                color = c(tfff.orange, tfff.blue, tfff.red),
-                linetype = "dashed") +
      theme(axis.text.x = element_blank(),
            axis.text.y = element_text(color = tfff.medium.gray),
            axis.title.x = element_blank(),
@@ -149,85 +110,126 @@ plot_median_income <- ggplot(median_income, aes(1, estimate)) +
            legend.position = "bottom",
            panel.grid.major.x = element_blank(),
            panel.grid.minor.x = element_blank(),
-           panel.grid.minor.y = element_blank()) +
-     labs(color = "",
-          title = "Median Income",
-          subtitle = "Each dot represents one community")
+           panel.grid.minor.y = element_blank())
 
 
+ggsave("plots/median-income.pdf",
+       height = 3,
+       width = 3)
 
 # Median home value -------------------------------------------------------
 
 
-plot_median_home_value <- ggplot(median_home_value_cats, aes(1, pct,
-                                                             fill = median_home_value_cat)) +
-     geom_col(color = "white") +
-     geom_text(aes(label = str_glue("{median_home_value_cat} ({percent(pct, 0)})")),
-               position = position_stack(vjust = .5),
-               color = "white") +
-     theme_void() +
-     theme(legend.position = "none",
-           plot.title = element_text(hjust = 0.5,
-                                     face = "bold")) +
-     scale_fill_manual(values = c(tfff.dark.green, tfff.light.green,
-                                  tfff.dark.green, tfff.light.green,
-                                  tfff.dark.green)) +
-     labs(title = "Median Home Value")
+ggplot(median_home_value, aes(estimate)) +
+     geom_histogram(fill = tfff.light.green) +
+     geom_vline(xintercept = median_home_value_oregon,
+                alpha = 1,
+                color = tfff.yellow,
+                linetype = "dashed",
+                size = 1) +
+     scale_x_continuous(labels = dollar_format(),
+                        limits = c(0, 350000)) +
+     scale_y_continuous(limits = c(0, 12),
+                        breaks = pretty_breaks(n = 5)) +
+     theme(panel.grid.minor.x = element_blank(),
+           panel.grid.minor.y = element_blank(),
+           axis.title = element_blank())
+
+ggsave("plots/median-home-value.pdf",
+       height = 3,
+       width = 4)
 
 
-# Latinx + Native Am pops -------------------------------------------------
 
-plot_latinx_native_am <- dk_or_ca_map() +
-     geom_point(data = native_am_latinx, aes(longitude.x, latitude.x,
-                                             size = pct,
-                                             color = pct),
+
+# Communities -------------------------------------------------------------
+
+library(ggthemes)
+
+dk_or_ca_map() +
+     geom_point(data = communities, 
+                aes(longitude, latitude),
+                alpha = 0.8,
+                # shape = 21,
+                fill = "white",
+                color = "black") +
+     theme_map()
+
+ggsave("plots/communities.pdf",
+       height = 3,
+       width = 4)
+
+# Native Americans ------------------------------------------------------------------
+
+
+
+dk_or_ca_map() +
+     geom_point(data = filter(native_am_latinx, group == "Native American"), aes(longitude.x, latitude.x,
+                                                                                 size = pct,
+                                                                                 color = pct),
                 alpha = 0.8) +
      labs(color = "") +
      scale_size(guide = "none") +
-     scale_color_gradientn(colors = c(tfff.light.green, tfff.dark.green),
+     scale_color_gradientn(colors = c("#FADFD0", tfff.orange),
                            labels = percent_format(accuracy = 1),
-                           breaks = seq(0, 1, by = .25)) +
-     facet_wrap(~group, ncol = 2) +
-     theme(plot.title = element_text(hjust = 0.5,
-                                     face = "bold")) +
-     labs(title = "Latinx and Native American Populations")
+                           breaks = seq(0, 1, by = .25)) 
+
+ggsave("plots/native-am.pdf",
+       height = 3,
+       width = 4)
+
+# Latinx ------------------------------------------------------------------
 
 
+
+dk_or_ca_map() +
+     geom_point(data = filter(native_am_latinx, group == "Latinx"), aes(longitude.x, latitude.x,
+                                                                        size = pct,
+                                                                        color = pct),
+                alpha = 0.8) +
+     labs(color = "") +
+     scale_size(guide = "none") +
+     scale_color_gradientn(colors = c("#F1D5D5", tfff.red),
+                           labels = percent_format(accuracy = 1),
+                           breaks = seq(0, 1, by = .25))
+
+ggsave("plots/latinx.pdf",
+       height = 3,
+       width = 4)
 
 
 # FAR ---------------------------------------------------------------------
 
-plot_far <- dk_or_ca_map() +
-     geom_point(data = far, aes(lon, lat,
-                                size = far_level,
-                                color = far_level),
-                alpha = 0.8) +
+
+
+# ggplot(far_categ, aes(far_level_categ, n,
+#                           alpha = far_level_categ)) +
+#      geom_col(fill = tfff.brown) +
+#      geom_text(aes(label = n),
+#                hjust = -1,
+#                color = tfff.blue,
+#                alpha = 1) +
+#      coord_flip() +
+#      # scale_y_continuous(limits = c(0, 15)) +
+#      theme(axis.title = element_blank(),
+#            legend.position = "none",
+#            axis.text.x = element_blank(),
+#            panel.grid = element_blank())
+
+dk_or_ca_map() +
+     geom_jitter(data = far, aes(lon, lat,
+                                 size = far_level_categ,
+                                 color = far_level_categ),
+                 alpha = 0.8) +
      labs(color = "") +
-     geom_text(data = far, aes(lon, lat, label = far_level),
+     geom_text(data = far, aes(lon, lat, label = far_level_categ),
                color = "white") +
      scale_size(guide = "none",
                 range = c(5, 8)) +
-     scale_color_gradientn(colors = c(tfff.light.green, tfff.dark.green),
-                           guide = "none") +
-     labs(title = "Frontier and Remote Level") +
-     theme(plot.title = element_text(hjust = 0.5))
+     scale_color_gradientn(colors = c("#BFB0AC", tfff.brown),
+                           guide = "none")
 
-
-
-# Put it all together -----------------------------------------------------
-
-plots_pies <- plot_core_county + plot_incorporation_status + plot_layout(ncol = 1)
-
-plots_stacked_bars <- (plot_pop_size | plot_median_home_value)
-
-plots_top_left <- (plots_pies | plots_stacked_bars) / plot_median_income
-
-plots_maps <- plot_far  / plot_latinx_native_am
-
-plot_final <- (plots_top_left | plots_maps)
-
-ggsave("plots/ficb_communities.pdf", 
-       plot_final,
-       width = 16,
-       height = 10)
+ggsave("plots/far.pdf",
+       height = 3,
+       width = 4)
 
