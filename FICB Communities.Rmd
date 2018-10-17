@@ -61,12 +61,14 @@ dk_or_ca_map <- function() {
 ```{r}
 
 ggplot(pop_size, aes(estimate)) +
-     geom_histogram(bins = 10) +
+     geom_histogram(bins = 20) +
      scale_x_continuous(labels = comma_format(),
                         limits = c(0, 45000)) +
      scale_y_continuous(limits = c(0, 15)) +
      labs(x = "Population",
           y = "Number of communities")
+
+
 ```
 
 ## Map
