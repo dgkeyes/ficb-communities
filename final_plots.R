@@ -58,28 +58,20 @@ dk_or_ca_map <- function() {
 
 # Pop size ----------------------------------------------------------------
 
-ggplot(pop_size_cats, aes(1, pct,
-                          fill = pop_cat)) +
-     geom_col(color = "white") +
-     theme_void() +
-     coord_flip() +
-     theme(legend.position = "none",
-           plot.title = element_text(hjust = 0.5,
-                                     face = "bold")) 
 
 ggplot(pop_size_cats, aes(pop_cat, n,
-                          alpha = n)) +
+                          alpha = pop_cat)) +
      geom_col(fill = tfff.blue) +
      geom_text(aes(label = n),
                hjust = -1,
                color = tfff.blue,
                alpha = 1) +
      coord_flip() +
-     scale_y_continuous(limits = c(0, 15)) +
+     scale_y_continuous(limits = c(0, 17)) +
      theme(axis.title = element_blank(),
            legend.position = "none",
            axis.text.x = element_blank(),
-           panel.grid = element_blank())
+           panel.grid = element_blank()) 
 
 ggsave("plots/pop-size.pdf",
        height = 3,
@@ -89,28 +81,22 @@ mean(pop_size$estimate)
 
 # Median income -----------------------------------------------------------
 
-
-ggplot(median_income, aes(1, estimate)) +
-     geom_hline(yintercept = median_income_comparisons$estimate,
+ggplot(median_income, aes(estimate)) +
+     geom_histogram(fill = tfff.dark.green) +
+     geom_vline(xintercept = median_income_comparisons$estimate,
                 alpha = 1,
                 size = 1,
                 color = tfff.yellow,
                 linetype = "dashed") +
-     geom_jitter(alpha = 0.85,
-                 color = tfff.dark.green,
-                 size = 3) +
-     scale_y_continuous(labels = dollar_format(),
-                        limits = c(0, 75000),
-                        breaks = seq(0, 75000, 25000)) +
-     coord_cartesian(clip = "off") +
-     theme(axis.text.x = element_blank(),
-           axis.text.y = element_text(color = tfff.medium.gray),
-           axis.title.x = element_blank(),
-           axis.title.y = element_blank(),
-           legend.position = "bottom",
-           panel.grid.major.x = element_blank(),
-           panel.grid.minor.x = element_blank(),
-           panel.grid.minor.y = element_blank())
+     scale_x_continuous(labels = dollar_format(),
+                        limits = c(0, 75000)) +
+     scale_y_continuous(limits = c(0, 7),
+                        breaks = pretty_breaks(n = 5)) +
+     theme(panel.grid.minor.x = element_blank(),
+           panel.grid.minor.y = element_blank(),
+           axis.title = element_blank())
+
+
 
 
 ggsave("plots/median-income.pdf",

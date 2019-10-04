@@ -149,11 +149,32 @@ pop_size <- get_acs(geography = "place",
      )) %>% 
      clean_community_name() %>% 
      mutate(full_address = str_glue("{name} {state}")) %>% 
-     # Need to fix because only getting 52 communities so some matching is off
      inner_join(communities, by = "full_address") %>% 
-     mutate(moe_pct = moe/estimate) 
+     mutate(moe_pct = moe/estimate) %>% 
+     add_row(name.x = "Applegate",
+             state.x = "OR",
+             estimate = 1441) %>% 
+     add_row(name.x = "Blue River",
+             state.x = "OR",
+             estimate = 986) %>% 
+     add_row(name.x = "McKenzie Bridge",
+             state.x = "OR",
+             estimate = 493) %>% 
+     add_row(name.x = "Vida",
+             state.x = "OR",
+             estimate = 1096) %>% 
+     add_row(name.x = "Deadwood",
+             state.x = "OR",
+             estimate = 343) %>% 
+     add_row(name.x = "Mapleton",
+             state.x = "OR",
+             estimate = 731) %>% 
+     add_row(name.x = "Swisshome",
+             state.x = "OR",
+             estimate = 341) 
 
 skim(pop_size$estimate)
+
 
 pop_size_cats <- pop_size %>% 
      mutate(pop_cat = case_when(
@@ -213,6 +234,24 @@ median_income <- get_acs(geography = "place",
           TRUE ~ "Oregon"
      )) 
 
+median_income %>% 
+     nrow()
+
+# Between poverty line and Oregon median
+
+median_income %>% 
+     filter(estimate < median_income_comparisons$estimate[1]) %>% 
+     filter(estimate > median_income_comparisons$estimate[2]) %>% 
+     nrow()
+
+# Below poverty line
+
+median_income %>% 
+     filter(estimate < median_income_comparisons$estimate[2]) %>% 
+     nrow()
+
+6/53
+     
 skim(median_income$estimate)
 
 median_income_comparisons <- get_acs(geography = "state", 
@@ -287,39 +326,14 @@ median_home_value_oregon <- get_acs(geography = "state",
                                     state = c("OR"),
                                     cache = T) %>% 
      clean_names() %>% 
-     pull(estimate)
+     pull(estimate) 
 
-%>% 
-     mutate(state = case_when(
-          str_detect(name, "California") ~ "CA",
-          TRUE ~ "OR"
-     )) %>% 
-     clean_community_name() %>% 
-     mutate(full_address = str_glue("{name} {state}")) %>% 
-     # Need to fix because only getting 52 communities so some matching is off
-     inner_join(communities, by = "full_address") %>% 
-     mutate(moe_pct = moe/estimate) 
 
-median_home_value_cats <- median_home_value %>% 
-     mutate(median_home_value_cat = case_when(
-          estimate > 250000 ~ "$250K+",
-          estimate > 200000 ~ "$200K-$250K",
-          estimate > 150000 ~ "$150K-$200K",
-          estimate > 100000 ~ "$100K-$150K",
-          TRUE ~ "<$100K"
-     )) %>% 
-     group_by(median_home_value_cat) %>% 
-     count() %>% 
-     ungroup() %>% 
-     mutate(median_home_value_cat = factor(median_home_value_cat, 
-                                           levels = c("<$100K",
-                                                      "$100K-$150K",
-                                                      "$150K-$200K",
-                                                      "$200K-$250K",
-                                                      "$250K+"))) %>% 
-     mutate(median_home_value_cat = fct_rev(median_home_value_cat)) %>% 
-     mutate(pct = prop.table(n))
+median_home_value %>% 
+     filter(estimate < median_home_value_oregon) %>% 
+     nrow()
 
+42/53
 
 # FAR -----------------------------------------
 
